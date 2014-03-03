@@ -348,8 +348,8 @@ Paul Lockaby S<E<lt>plockaby AT cpan DOT orgE<gt>>
 
 =head1 CREDIT
 
-This module is a subclass to L<Thread::Queue> which is maintained by Jerry D.
-Hedden so credit for most of the implementation goes there.
+Large huge portions of this module are directly from L<Thread::Queue> which is
+maintained by Jerry D. Hedden.
 
 =head1 LICENSE
 
