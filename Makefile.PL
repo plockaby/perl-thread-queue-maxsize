@@ -14,6 +14,7 @@ WriteMakefile(
         'threads::shared'   => 1.21,
         'Scalar::Util'      => 1.10,
         'Test::More'        => 0.50,
+        'Thread::Queue'     => 3.04,
     },
     'INSTALLDIRS'   => (($] < 5.011) ? 'perl' : 'site'),
 
