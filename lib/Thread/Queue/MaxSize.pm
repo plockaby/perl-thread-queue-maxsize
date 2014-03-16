@@ -3,7 +3,7 @@ package Thread::Queue::MaxSize;
 use strict;
 use warnings;
 
-our $VERSION = '1.0.1';
+our $VERSION = '1.02';
 $VERSION = eval $VERSION;
 
 use parent qw(Thread::Queue);
@@ -188,7 +188,7 @@ Thread::Queue::MaxSize - Thread-safe queues with an upper bound
 
 =head1 VERSION
 
-This document describes Thread::Queue::MaxSize version 1.0.0
+This document describes Thread::Queue::MaxSize version 1.02
 
 =head1 SYNOPSIS
 
