@@ -3,7 +3,7 @@ package Thread::Queue::MaxSize;
 use strict;
 use warnings;
 
-our $VERSION = '1.0.0';
+our $VERSION = '1.0.1';
 $VERSION = eval $VERSION;
 
 use parent qw(Thread::Queue);
@@ -12,8 +12,8 @@ use threads::shared 1.21;
 use Scalar::Util 1.10 qw(looks_like_number);
 
 sub new {
-    my ($class, $config, @items) = @_;
-    my $self = $class->SUPER::new(@items);
+    my ($class, $config) = @_;
+    my $self = $class->SUPER::new();
 
     if ($config && (!ref($config) || ref($config) ne "HASH")) {
         require Carp;
@@ -201,25 +201,69 @@ This document describes Thread::Queue::MaxSize version 1.0.0
     # create a new empty queue with no max limit
     my $q = Thread::Queue::MaxSize->new();
 
-    # create a new empty queue that will only ever store 1000 entries
+    # create a new empty queue that will only ever store 1000 items
     my $q = Thread::Queue::MaxSize->new({ maxsize => 1000 });
 
-    # create a new empty queue with no max limit and some default values
-    my $q = Thread::Queue::MaxSize->new({}, $foo, $bar, @qwerty);
-
-    # create a new empty queue with some default values that will only ever
-    # store 1000 entries
-    my $q = Thread::Queue::MaxSize->new({ maxsize => 1000 }, $foo, $bar, @qwerty);
+    # create a queue that will die when too many items are enqueued
+    my $q = Thread::Queue::MaxSize->new({ maxsize => 1000, on_maxsize => 'die' });
 
 =head1 DESCRIPTION
 
-This is a variation on L<Thread::Queue> that will enforce an upper bound on the
-number of entries that can be enqueued. This can be used to prevent memory use
-from exploding on a queue that might never empty.
+This is a subclass to L<Thread::Queue> that will enforce an upper bound on the
+number of items in a queue. This can be used to prevent memory use from
+exploding on a queue that might never empty.
 
-If new entries are added to the queue that cause the queue to exceed the
-configured size, the oldest entries will be dropped off the end. This may cause
-your program to miss some entries on the queue but that's how it works.
+=head1 QUEUE CREATION
+
+=over
+
+=item ->new()
+
+Creates a new empty queue. This queue will have no items to start.
+
+=item ->new(OPTIONS)
+
+Creates a new empty queue with some options. The two configurable options are:
+
+=over
+
+=item maxsize
+
+Defines the maximum size that the queue can ever be.
+
+=item on_maxsize
+
+Defines the action that will be taken when a queue reaches its maximum size.
+There are five actions that can be taken when the list of items to enqueue or
+insert would cause the queue to go over its maximum size. In all cases either
+the all items are enqueued/inserted or none of the items are enqueued/inserted.
+
+=over
+
+=item die
+
+No items will be enqueued/inserted and the queue will throw an exception.
+
+=item warn_and_reject
+
+No items will be enqueued/inserted and the queue will issue a warning.
+
+=item silent_reject
+
+No items will be enqueued/inserted and no indication will be given as to why.
+
+=back warn_and_truncate
+
+All items will be enqueued/inserted, the oldest items on the list will be
+truncated off the end, and the queue will issue a warning.
+
+=back silent_truncate
+
+All items will be enqueued/insertd, the oldest items on the list will be
+truncated off the end, and no indication will be given as to why. This is the
+default action.
+
+=back
 
 =head1 SEE ALSO
 
@@ -231,8 +275,8 @@ Paul Lockaby S<E<lt>plockaby AT cpan DOT orgE<gt>>
 
 =head1 CREDIT
 
-Large huge portions of this module are directly from L<Thread::Queue> which is
-maintained by Jerry D. Hedden.
+Significant portions of this module are directly from L<Thread::Queue> which is
+maintained by Jerry D. Hedden, <jdhedden AT cpan DOT org>.
 
 =head1 LICENSE
 
