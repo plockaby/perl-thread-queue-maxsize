@@ -30,7 +30,9 @@ plan('tests' => 81);
 
 my $nthreads = 5;
 
-my $q = Thread::Queue::MaxSize->new({}, 1 .. $nthreads);
+my $q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. $nthreads);
+
 ok($q, 'New queue');
 is($q->pending(), $nthreads, 'Pre-populated queue count');
 

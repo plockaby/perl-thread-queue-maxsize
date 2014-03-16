@@ -29,7 +29,8 @@ plan('tests' => 3);
 
 # The following tests locking a queue
 
-my $q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+my $q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 my $sm = Thread::Semaphore->new(0);

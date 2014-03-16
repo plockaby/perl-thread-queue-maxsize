@@ -26,7 +26,8 @@ if ($] == 5.008) {
 Test::More->import();
 plan('tests' => 20);
 
-my $q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+my $q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 threads->create(sub {
@@ -41,7 +42,8 @@ threads->create(sub {
     ok(! defined($x), 'Big neg index');
 })->join();
 
-$q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+$q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 threads->create(sub {
@@ -57,7 +59,8 @@ threads->create(sub {
     is_deeply(\@x, [], 'Too far');
 })->join();
 
-$q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+$q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 threads->create(sub {

@@ -9,7 +9,8 @@ use Thread::Queue::MaxSize;
 
 # Queue up items
 my $max = 12;
-my $q = Thread::Queue::MaxSize->new({ maxsize => $max, on_maxsize => 'silent_reject' }, 1 .. 10);
+my $q = Thread::Queue::MaxSize->new({ maxsize => $max, on_maxsize => 'silent_reject' });
+$q->enqueue(1 .. 10);
 ok($q, 'New queue');
 
 is($q->pending(), 10, 'Initial queue size');
@@ -27,7 +28,8 @@ is($q->peek(), 1, 'First value after three');
 # create a queue that can only have ten items in it
 # then put 8 items into it
 $max = 10;
-$q = Thread::Queue::MaxSize->new({ maxsize => $max, on_maxsize => 'silent_reject' }, 1 .. 8);
+$q = Thread::Queue::MaxSize->new({ maxsize => $max, on_maxsize => 'silent_reject' });
+$q->enqueue(1 .. 8);
 is($q->pending(), 8, 'Initial queue size');
 
 # add three 12 things to it
@@ -38,7 +40,8 @@ is($q->peek(), 1, 'Verify two oldest thinges were dequeued from the new list');
 # create a queue that can only have ten items in it
 # then put 8 items into it
 $max = 10;
-$q = Thread::Queue::MaxSize->new({ maxsize => $max, on_maxsize => 'silent_reject' }, 1 .. 8);
+$q = Thread::Queue::MaxSize->new({ maxsize => $max, on_maxsize => 'silent_reject' });
+$q->enqueue(1 .. 8);
 is($q->pending(), 8, 'Initial queue size');
 
 # insert four things into the middle of it

@@ -26,7 +26,8 @@ if ($] == 5.008) {
 Test::More->import();
 plan('tests' => 19);
 
-my $q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+my $q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 $q->enqueue([ qw/foo bar/ ]);

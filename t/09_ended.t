@@ -33,7 +33,8 @@ plan tests => 3*$num_threads*$cycles*$count + 6*$num_threads + 6;
 # Test for end() while threads are blocked and no more items in queue
 {
     my @items = 1..($num_threads*$cycles*$count);
-    my $q = Thread::Queue::MaxSize->new({}, @items);
+    my $q = Thread::Queue::MaxSize->new({});
+    $q->enqueue(@items);
     my $r = Thread::Queue::MaxSize->new();
 
     my @threads;
@@ -76,7 +77,8 @@ plan tests => 3*$num_threads*$cycles*$count + 6*$num_threads + 6;
 # Test for end() while threads are blocked and items still remain in queue
 {
     my @items = 1..($num_threads*$cycles*$count + 1);
-    my $q = Thread::Queue::MaxSize->new({}, @items);
+    my $q = Thread::Queue::MaxSize->new({});
+    $q->enqueue(@items);
     my $r = Thread::Queue::MaxSize->new();
 
     my @threads;
@@ -119,7 +121,8 @@ plan tests => 3*$num_threads*$cycles*$count + 6*$num_threads + 6;
 # Test of end() send while items in queue
 {
     my @items = 1..($num_threads*$cycles*$count + 1);
-    my $q = Thread::Queue::MaxSize->new({}, @items);
+    my $q = Thread::Queue::MaxSize->new({});
+    $q->enqueue(@items);
 
     my @threads;
     for my $ii (1..$num_threads) {

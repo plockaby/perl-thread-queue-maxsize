@@ -26,7 +26,8 @@ if ($] == 5.008) {
 Test::More->import();
 plan('tests' => 16);
 
-my $q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+my $q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 threads->create(sub {
@@ -40,7 +41,8 @@ my @x = $q->dequeue_nb(100);
 is_deeply(\@x, [1..10], 'No-op inserts');
 
 
-$q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+$q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 threads->create(sub {
@@ -52,7 +54,8 @@ threads->create(sub {
 is_deeply(\@x, ['head',1..10,'tail'], 'Edge inserts');
 
 
-$q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+$q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 threads->create(sub {
@@ -64,7 +67,8 @@ threads->create(sub {
 is_deeply(\@x, [1..5,'foo','bar',6..8,'qux',9,10], 'Middle inserts');
 
 
-$q = Thread::Queue::MaxSize->new({}, 1 .. 10);
+$q = Thread::Queue::MaxSize->new({});
+$q->enqueue($_) for (1 .. 10);
 ok($q, 'New queue');
 
 threads->create(sub {

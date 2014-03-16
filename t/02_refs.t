@@ -79,7 +79,8 @@ $cir3->{'self'} = \$cir3;
 bless($cir3, 'Circular');
 
 # Queue up items
-my $q = Thread::Queue::MaxSize->new({}, \@ary1, \@ary2);
+my $q = Thread::Queue::MaxSize->new();
+$q->enqueue($_) for (\@ary1, \@ary2);
 ok($q, 'New queue');
 is($q->pending(), 2, 'Queue count');
 $q->enqueue($obj1, $obj2);
