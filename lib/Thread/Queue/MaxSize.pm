@@ -13,6 +13,7 @@ use Scalar::Util 1.10 qw(looks_like_number);
 
 sub new {
     my ($class, $config, @items) = @_;
+    my $self = $class->SUPER::new(@items);
 
     if ($config && (!ref($config) || ref($config) ne "HASH")) {
         require Carp;
@@ -21,16 +22,17 @@ sub new {
 
     # make sure that maxsize is actually a number
     my $maxsize = ($config) ? $config->{'maxsize'} : undef;
-    if (defined($maxsize) && (!looks_like_number($maxsize) || (int($maxsize) != $maxsize) || ($maxsize < 1))) {
-        require Carp;
-        croak("invalid 'maxsize' argument (${maxsize})");
-    }
+    $self->{'MAXSIZE'} = $self->_validate_maxsize($maxsize);
 
     # determine what type of action we'll take on exceeding our max size
-    # TODO
+    # 1. raise an exception (die)
+    # 2. warn and reject entire addition/insertion
+    # 3. silently reject entire addition/insertion
+    # 4. warn, process addition/insertion and then truncate to max size
+    # 5. silently process addition/insertion and then truncate to max size
+    my $on_maxsize = ($config) ? $config->{'on_maxsize'} : undef;
+    $self->{'ON_MAXSIZE'} = $self->_validate_on_maxsize($on_maxsize || 'silent_truncate');
 
-    my $self = $class->SUPER::new(@items);
-    $self->{'MAXSIZE'} = $maxsize;
     return $self;
 }
 
@@ -47,7 +49,21 @@ sub enqueue {
     my $queue = $self->{'queue'};
 
     # queue can't be too big so shift the oldest things off if necessary
-    if (defined($self->{'MAXSIZE'})) {
+    if (defined($self->{'MAXSIZE'}) && $self->{'MAXSIZE'} > 0) {
+        if ((scalar(@{$queue}) + scalar(@_)) > $self->{'MAXSIZE'} &&
+            $self->{'ON_MAXSIZE'} =~ /^(die|warn_and_reject|silent_reject|warn_and_truncate)$/ix) {
+            if ($1 =~ /^warn_and_truncate$/ix) {
+                warn "queue exceeding its maximum size: truncating\n";
+            } elsif ($1 =~ /^silent_reject$/ix) {
+                return;
+            } elsif ($1 =~ /^warn_and_reject$/ix) {
+                warn "not enqueuing new items: queue would exceed its maximum size\n";
+                return;
+            } elsif ($1 =~ /^die$/ix) {
+                die "not enqueuing new items: queue would exceed its maximum size\n";
+            }
+        }
+
         # remove things already on the queue
         while (scalar(@{$queue}) && (scalar(@{$queue}) + scalar(@_)) > $self->{'MAXSIZE'}) {
             shift(@{$queue});
@@ -93,7 +109,27 @@ sub insert {
     }
 
     # queue can't be too big so shift the oldest things off if necessary
-    if (defined($self->{'MAXSIZE'})) {
+    if (defined($self->{'MAXSIZE'}) && $self->{'MAXSIZE'} > 0) {
+        if ((scalar(@{$queue}) + scalar(@_) + scalar(@tmp)) > $self->{'MAXSIZE'} &&
+            $self->{'ON_MAXSIZE'} =~ /^(die|warn_and_reject|silent_reject|warn_and_truncate)$/ix) {
+            if ($1 =~ /^warn_and_truncate$/ix) {
+                warn "queue exceeding its maximum size: truncating\n";
+            } elsif ($1 =~ /^silent_reject$/ix) {
+                # reset queue before dying
+                push(@{$queue}, @tmp);
+                return;
+            } elsif ($1 =~ /^warn_and_reject$/ix) {
+                # reset queue before dying
+                push(@{$queue}, @tmp);
+                warn "not inserting new items: queue would exceed its maximum size\n";
+                return;
+            } elsif ($1 =~ /^die$/ix) {
+                # reset queue before dying
+                push(@{$queue}, @tmp);
+                die "not inserting new items: queue would exceed its maximum size\n";
+            }
+        }
+
         # remove things already on the queue
         while (scalar(@{$queue}) && (scalar(@{$queue}) + scalar(@_) + scalar(@tmp)) > $self->{'MAXSIZE'}) {
             shift(@{$queue});
@@ -114,6 +150,34 @@ sub insert {
 
     # soup's up
     cond_signal(%$self);
+}
+
+sub _validate_maxsize {
+    my ($self, $maxsize) = @_;
+
+    if (defined($maxsize) && (!looks_like_number($maxsize) || (int($maxsize) != $maxsize) || ($maxsize < 1))) {
+        require Carp;
+        my ($method) = (caller(1))[3];
+        my $class_name = ref($self);
+        $method =~ s/${class_name}:://;
+        Carp::croak("Invalid 'maxsize' argument ($maxsize) to '$method' method");
+    }
+
+    return $maxsize;
+}
+
+sub _validate_on_maxsize {
+    my ($self, $on_maxsize) = @_;
+
+    if (defined($on_maxsize) && ($on_maxsize !~ /^(?:die|warn_and_reject|silent_reject|warn_and_truncate|silent_truncate)$/ix)) {
+        require Carp;
+        my ($method) = (caller(1))[3];
+        my $class_name = ref($self);
+        $method =~ s/${class_name}:://;
+        Carp::croak("Invalid 'on_maxsize' argument ($on_maxsize) to '$method' method");
+    }
+
+    return $on_maxsize;
 }
 
 1;
