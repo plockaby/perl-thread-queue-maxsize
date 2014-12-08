@@ -22,4 +22,4 @@ requires:
   Test::More: 0.5
   Thread::Queue: 3
   threads::shared: 1.21
-version: v1.02
+version: v1.03
